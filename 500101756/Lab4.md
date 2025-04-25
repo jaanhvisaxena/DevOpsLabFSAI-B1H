@@ -1,4 +1,4 @@
-# **GIT Branching / Merge / Rebase**
+# **Lab 4: GIT Branching / Merge / Rebase**
 
 ## 1. **Creating Directories and Files:**
 
