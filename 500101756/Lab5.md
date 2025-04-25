@@ -1,4 +1,4 @@
-# **Git Submodules**
+# **Lab 5: Git Submodules**
 
 ## **Git Workflow for Multiple Repositories and Submodules**
 
