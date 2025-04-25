@@ -1,68 +1,170 @@
+# DevOps Lab 8 – FastAPI Dockerization & CI/CD using GitHub Actions
 
-# DevOps Lab 8 – Automating Docker Builds with GitHub Actions
-
+**Name:** Jaanhvi Saxena  
+**SAP ID:** 500101756  
+**Roll Number:** R2142220524  
+**Program:** B.Tech CSE (Full Stack AI) – Honours  
+**College:** UPES Dehradun  
+**Lab Title:** Automating Docker Builds with GitHub Actions  
 **Repository:** [GitHub - Lab 8]
-
-In this lab, we extended our containerized FastAPI application by automating its Docker image build and push process using **GitHub Actions**.
-
-GitHub Actions is a CI/CD platform provided by GitHub that enables us to create custom workflows for building, testing, and deploying applications right from our GitHub repository.
 
 ---
 
 ## Objective
 
-To automate the build process of a Dockerized FastAPI application and push the image to Docker Hub every time code is pushed to the repository.
+To containerize a FastAPI application and automate its Docker image build and push process using GitHub Actions, ensuring a seamless CI/CD pipeline for deployment.
 
 ---
 
-## GitHub Actions Workflow Breakdown
+## Tools & Technologies Used
 
-**File Location:** `.github/workflows/DockerBuild.yml`
+- FastAPI (Python web framework)
+- Docker / Podman (Container platform)
+- GitHub Actions (CI/CD platform)
+- Docker Hub (Image registry)
+- Git (Version control)
 
-### Workflow Details
+---
 
-- **name: Docker image build**
-  - This is the name assigned to the GitHub Actions workflow.
+## Step 1: Install Podman (Docker Alternative)
 
-- **on: push**
-  - The workflow is triggered automatically on every push to the repository.
+**Podman** is a container engine that can serve as a replacement for Docker.
 
-### Jobs and Steps
+### Installation
 
-- **jobs: build**
-  - Defines a job called `build` that contains all the steps required to automate the process.
-
-- **runs-on: ubuntu-latest**
-  - Specifies that the job will run on the latest version of an Ubuntu virtual machine.
-
-### Steps Explained
-
-1. **Checkout code**
-   ```yaml
-   - uses: actions/checkout@v3
-   ```
-   - This checks out the source code from the repository into the workflow.
-
-2. **Check for secret**
-   - Ensures that the Docker token is present in GitHub secrets.
-
-3. **Log in to Docker Hub**
-   ```yaml
-   - name: Docker Login
-     run: echo ${{ secrets.DOCKERTOKEN }} | docker login -u "your-docker-username" --password-stdin
+1. Download `podman-cli` from [https://podman.io](https://podman.io/)
+2. Initialize Podman machine and configure alias:
+   ```bash
+   podman machine init
+   podman machine start
+   alias docker=podman
+   docker --version
    ```
 
-4. **Build Docker Image**
-   ```yaml
-   - name: Build Docker Image
-     run: docker build -t your-docker-username/fastapi-app:v0.1 .
-   ```
+---
 
-5. **Push Docker Image to Docker Hub**
-   ```yaml
-   - name: Push Docker Image
-     run: docker push your-docker-username/fastapi-app:v0.1
-   ```
+## Step 2: FastAPI Server Code
+
+**File:** `main.py`
+
+```python
+from fastapi import FastAPI
+import uvicorn
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"name": "Jaanhvi", "Location": "Dehradun"}
+
+@app.get("/{data}")
+def dynamic(data: str):
+    return {"hi": data, "Location": "Dehradun"}
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=80, reload=True)
+```
+
+---
+
+## Step 3: Requirements
+
+**File:** `requirements.txt`
+
+```
+fastapi
+uvicorn
+```
+
+---
+
+## Step 4: Dockerfile
+
+**File:** `Dockerfile`
+
+```dockerfile
+FROM ubuntu
+
+RUN apt update -y && apt install -y python3 python3-pip pipenv
+
+WORKDIR /app
+COPY . /app/
+RUN pipenv install -r requirements.txt
+
+EXPOSE 80
+CMD pipenv run python3 ./main.py
+```
+
+---
+
+## Step 5: Build and Run (Manual)
+
+### Build Image
+```bash
+docker build -t fastapi-jaanhvi:v1 .
+```
+
+### List Images
+```bash
+docker images
+```
+
+### Run Container
+```bash
+docker run fastapi-jaanhvi:v1
+```
+
+---
+
+## Step 6: GitHub Actions Workflow
+
+**File:** `.github/workflows/DockerBuild.yml`
+
+```yaml
+name: Docker image build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Build & Push Image
+        run: |
+          echo ${{ secrets.DOCKERTOKEN }} | docker login -u "jaanhvisaxena" --password-stdin
+          docker build -t jaanhvisaxena/fastapi-docker:v0.1 .
+          docker push jaanhvisaxena/fastapi-docker:v0.1
+```
+
+---
+
+## Docker Token Setup
+
+### Steps:
+
+1. Visit [Docker Hub](https://hub.docker.com)
+2. Go to **Account Settings > Security > Access Tokens**
+3. Generate a token, give it a name, set permissions
+4. Copy and store it securely (you’ll use this in GitHub Secrets)
+
+Login using token:
+```bash
+echo "<your-token>" | docker login -u <your-username> --password-stdin
+```
+
+---
+
+## Workflow Explanation
+
+- **Trigger:** The workflow runs on every push to the repo.
+- **Steps:**
+  1. Checkout code from GitHub
+  2. Log in to Docker Hub using stored secrets
+  3. Build the Docker image
+  4. Push the image to Docker Hub
 
 ---
 
@@ -74,6 +176,3 @@ This GitHub Actions workflow automates:
 - Pushing the image
 
 This ensures a **faster**, **more consistent**, and **automated deployment** process for your containerized FastAPI application.
-
----
-**Author:** Jaanhvi Saxena
