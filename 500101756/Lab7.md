@@ -1,5 +1,5 @@
 
-# GIT Fork and Open-Source
+# Lab 7: GIT Fork and Open-Source
 
 ## Steps:
 
