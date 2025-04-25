@@ -1,4 +1,4 @@
-# **Git Basics**
+# **Lab 3: Git Basics**
 
 ## **Using SSH and HTTP for Git**
 
