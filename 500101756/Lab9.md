@@ -1,4 +1,4 @@
-# DevOps Lab 9 – Build using Jenkins
+# DevOps Lab 8 – Build using Jenkins
 
 **Name:** Jaanhvi Saxena  
 **SAP ID:** 500101756  
